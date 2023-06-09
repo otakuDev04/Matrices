@@ -1,8 +1,7 @@
 #include <iostream>
-#include <ranges>
 #include "Matrix.h"
 
-// ITERATOR CLASS
+// ITERATOR CLASS CONSTRUCTORS
 template <typename matrixType>
 Matrix<matrixType>::Iterator::Iterator() : m_ptr(nullptr) {}
 
@@ -10,7 +9,6 @@ template <typename matrixType>
 Matrix<matrixType>::Iterator::Iterator(pointer m_ptr) : m_ptr(m_ptr) {}
 
 // ITERATOR MEMBER METHODS
-
 template <typename matrixType>
 auto Matrix<matrixType>::Iterator::operator*() const -> reference
 {
@@ -72,21 +70,32 @@ auto Matrix<matrixType>::Iterator::operator-=(difference_type gap) -> Matrix<mat
     m_ptr -= gap;
     return *this;
 }
-
-// MATRIX CLASSS MEMBER FUNCTIONS
+// ROW CLASS CONSTRUCTORS
 template <typename matrixType>
-auto Matrix<matrixType>::begin() -> Iterator
+Matrix<matrixType>::Row::Row(matrixType *rowStartElement, std::size_t column) : rowStartElement(rowStartElement), columns(column) {}
+
+// ROW CLASS MEMBER FUNCTIONS
+template <typename matrixType>
+auto Matrix<matrixType>::Row::operator[](std::size_t column) -> matrixType &
 {
-    return Matrix::Iterator(mainMatrix.get());
+    if (column >= columns)
+    {
+        throw std::out_of_range("Column index out of range");
+    }
+    return rowStartElement[column];
 }
 
 template <typename matrixType>
-auto Matrix<matrixType>::end() -> Iterator
+auto Matrix<matrixType>::Row::operator[](std::size_t column) const -> const matrixType &
 {
-    return Matrix<matrixType>::Iterator(mainMatrix.get() + (mainRows * mainColumns));
+    if (column >= columns)
+    {
+        throw std::out_of_range("Column index out of range");
+    }
+    return rowStartElement[column];
 }
 
-// CONSTRUCTORS
+// MATRIX CLASS CONSTRUCTORS
 template <typename matrixType>
 Matrix<matrixType>::Matrix() : mainRows(1), mainColumns(1), mainMatrix(new matrixType[mainRows * mainColumns])
 {
@@ -97,4 +106,90 @@ template <typename matrixType>
 Matrix<matrixType>::Matrix(std::size_t rows, std::size_t columns) : mainRows(rows), mainColumns(columns), mainMatrix(new matrixType[mainRows * mainColumns])
 {
     std::ranges::fill(*this, 0);
+}
+
+// MATRIX CLASS DECONSTRUCTORS
+template <typename matrixtype>
+Matrix<matrixtype>::~Matrix()
+{
+    delete[] mainMatrix;
+}
+
+// MATRIX CLASSS MEMBER FUNCTIONS
+// RANGE COMPATIBILITY
+template <typename matrixType>
+auto Matrix<matrixType>::begin() -> Iterator
+{
+    return Matrix<matrixType>::Iterator(mainMatrix);
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::end() -> Iterator
+{
+    return Matrix<matrixType>::Iterator(mainMatrix + (mainRows * mainColumns));
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::begin() const -> const Iterator
+{
+    return Matrix<matrixType>::Iterator(mainMatrix);
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::end() const -> const Iterator
+{
+    return Matrix<matrixType>::Iterator(mainMatrix + (mainRows * mainColumns));
+}
+// ACCESSORS
+template <typename matrixType>
+auto Matrix<matrixType>::operator[](std::size_t row) -> Row
+{
+    if (row >= mainRows)
+    {
+        throw std::out_of_range("Row index out of range");
+    }
+    return Row(mainMatrix + row * mainColumns, mainColumns);
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::operator[](std::size_t row) const -> const Row
+{
+    if (row >= mainRows)
+    {
+        throw std::out_of_range("Row index out of range");
+    }
+    return Row(mainMatrix + row * mainColumns, mainColumns);
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::operator()(std::size_t row, std::size_t column) -> matrixType &
+{
+    if (row >= mainRows || column >= mainColumns)
+    {
+        throw std::out_of_range("Row or Column index out of range");
+    }
+    return mainMatrix[(row * mainColumns) + column];
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::operator()(std::size_t row, std::size_t column) const -> const matrixType &
+{
+    if (row >= mainRows || column >= mainColumns)
+    {
+        throw std::out_of_range("Row or Column index out of range");
+    }
+    return mainMatrix[(row * mainColumns) + column];
+}
+
+// ASSIGNMENT
+template <typename matrixType>
+auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &
+{
+    if (this != matrix)
+    {
+        mainRows = matrix.mainRows;
+        mainColumns = matrix.mainColumns;
+        std::copy(matrix.begin, matrix.end, mainMatrix);
+    }
+    return *this;
 }
