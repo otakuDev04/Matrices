@@ -7,6 +7,7 @@
 #include <concepts>
 #include <ranges>
 #include <stdexcept>
+#include <initializer_list>
 
 template <typename matrixType>
 concept Numeric = std::is_arithmetic_v<matrixType>;
@@ -18,6 +19,7 @@ public:
     Matrix();
     Matrix(std::size_t rows, std::size_t columns);
     Matrix(const Matrix<matrixType> &matrix); // copy constructor
+    Matrix(const std::initializer_list<std::initializer_list<matrixType>> &matrix);
 
     // DECONSTRUCTOR FOR MATRIX
     ~Matrix();
@@ -93,6 +95,7 @@ public:
 
         auto operator[](std::size_t column) -> matrixType &;
         auto operator[](std::size_t column) const -> const matrixType &;
+        auto operator=(const Row &row) const -> const Row;
 
     private:
         std::size_t columns;
@@ -112,10 +115,10 @@ public:
     auto operator()(std::size_t row, std::size_t column) -> matrixType &;
     auto operator()(std::size_t row, std::size_t column) const -> const matrixType &;
 
-    auto getRows() -> std::size_t;
-    auto getColumns() -> std::size_t;
-    auto getRows() const -> const std::size_t;
-    auto getColumns() const -> const std::size_t;
+    inline auto getRows() -> std::size_t;
+    inline auto getColumns() -> std::size_t;
+    inline auto getRows() const -> const std::size_t;
+    inline auto getColumns() const -> const std::size_t;
     // ASSIGNMENT
     auto operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &;
 
@@ -130,5 +133,14 @@ auto operator+(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixTyp
 
 template <typename lhsMatrixType, typename rhsMatrixType>
 auto operator-(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() - rhsMatrixType())>;
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator*(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() * rhsMatrixType())>;
+
+template <typename matrixType, typename constIntergralType>
+auto operator*(const Matrix<matrixType> &matrix, const constIntergralType &constIntegral) -> Matrix<decltype(matrixType() * constIntergralType())>;
+
+template <typename matrixType, typename constIntergralType>
+auto operator*(const constIntergralType &constIntegral, const Matrix<matrixType> &matrix) -> Matrix<decltype(matrixType() * constIntergralType())>;
 
 #include "Matrix.inl"

@@ -95,6 +95,16 @@ auto Matrix<matrixType>::Row::operator[](std::size_t column) const -> const matr
     return rowStartElement[column];
 }
 
+template <typename matrixType>
+auto Matrix<matrixType>::Row::operator=(const Row &row) const -> const Row
+{
+    Row result(columns);
+    for (std::size_t rowElement = 0; rowElement < columns; ++rowElement)
+    {
+        result.rowStartElement[rowElement] = rowStartElement[rowElement] * row.rowStartElement[rowElement];
+    }
+}
+
 // MATRIX CLASS CONSTRUCTORS
 template <typename matrixType>
 Matrix<matrixType>::Matrix() : mainRows(1), mainColumns(1), mainMatrix(new matrixType[mainRows * mainColumns])
@@ -113,6 +123,23 @@ Matrix<matrixType>::Matrix(const Matrix<matrixType> &matrix) : mainRows(matrix.m
 {
     mainMatrix = new matrixType[mainRows * mainColumns];
     std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), mainMatrix);
+}
+
+template <typename matrixType>
+Matrix<matrixType>::Matrix(const std::initializer_list<std::initializer_list<matrixType>> &matrix) : mainRows(matrix.size()), mainColumns(matrix.begin()->size()), mainMatrix(new matrixType[mainRows * mainColumns])
+{
+    std::size_t row = 0;
+    std::size_t column = 0;
+    for (const auto &rowElement : matrix)
+    {
+        for (const auto &value : rowElement)
+        {
+            mainMatrix[row * mainColumns + column] = value;
+            ++column;
+        }
+        ++row;
+        column = 0;
+    }
 }
 
 // MATRIX CLASS DECONSTRUCTORS
@@ -211,12 +238,17 @@ auto Matrix<matrixType>::getColumns() const -> const std::size_t
 {
     return mainColumns;
 }
+
 // ASSIGNMENT
 template <typename matrixType>
 auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &
 {
     if (this != matrix)
     {
+        matrixType *tempMatrix = new matrixType[matrix.mainRows * matrix.mainColumns];
+        std::copy(matrix.begin, matrix.end, tempMatrix);
+
+        delete[] mainMatrix;
         mainRows = matrix.mainRows;
         mainColumns = matrix.mainColumns;
         std::copy(matrix.begin, matrix.end, mainMatrix);
@@ -261,4 +293,49 @@ auto operator-(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixTyp
     }
 
     return resultMatrix;
+}
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator*(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() * rhsMatrixType())>
+{
+
+    if (!(lhsMatrix.getColumns() == rhsMatrix.getRows()))
+    {
+        throw std::out_of_range("Invalid Multiplication");
+    }
+
+    Matrix<decltype(lhsMatrixType() * rhsMatrixType())> resultMatrix(lhsMatrix.getRows(), rhsMatrix.getColumns());
+
+    for (std::size_t lhsRow = 0; lhsRow < lhsMatrix.getRows(); lhsRow++)
+    {
+        for (std::size_t rhsColumn = 0; rhsColumn < rhsMatrix.getColumns(); rhsColumn++)
+        {
+            for (std::size_t lhsColumn = 0; lhsColumn < lhsMatrix.getColumns(); lhsColumn++)
+            {
+                resultMatrix(lhsRow, rhsColumn) += lhsMatrix(lhsRow, lhsColumn) * rhsMatrix(lhsRow, rhsColumn);
+            }
+        }
+    }
+
+    return resultMatrix;
+}
+
+template <typename matrixType, typename constIntergralType>
+auto operator*(const Matrix<matrixType> &otherMatrix, const constIntergralType &constIntegral) -> Matrix<decltype(matrixType() * constIntergralType())>
+{
+    Matrix<decltype(matrixType() * constIntergralType())> resultMatrix(otherMatrix.getRows(), otherMatrix.getColumns());
+
+    for (const auto &[otherMatrixElement, resultMatrixElement] : std::ranges::views::zip(otherMatrix, resultMatrix))
+    {
+        resultMatrixElement = constIntegral * otherMatrixElement;
+    }
+
+    return resultMatrix;
+}
+
+template <typename matrixType, typename constIntergralType>
+auto operator*(const constIntergralType &constIntegral, const Matrix<matrixType> &otherMatrix) -> Matrix<decltype(matrixType() * constIntergralType())>
+{
+
+    return otherMatrix * constIntegral;
 }
