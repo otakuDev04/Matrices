@@ -17,6 +17,7 @@ public:
     // CONSTRUCTOR FOR MATRIX
     Matrix();
     Matrix(std::size_t rows, std::size_t columns);
+    Matrix(const Matrix<matrixType> &matrix); // copy constructor
 
     // DECONSTRUCTOR FOR MATRIX
     ~Matrix();
@@ -111,6 +112,10 @@ public:
     auto operator()(std::size_t row, std::size_t column) -> matrixType &;
     auto operator()(std::size_t row, std::size_t column) const -> const matrixType &;
 
+    auto getRows() -> std::size_t;
+    auto getColumns() -> std::size_t;
+    auto getRows() const -> const std::size_t;
+    auto getColumns() const -> const std::size_t;
     // ASSIGNMENT
     auto operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &;
 
@@ -118,5 +123,12 @@ private:
     std::size_t mainRows, mainColumns;
     matrixType *mainMatrix;
 };
+
+// MATRIX OPERATIONS
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator+(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() + rhsMatrixType())>;
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator-(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() - rhsMatrixType())>;
 
 #include "Matrix.inl"

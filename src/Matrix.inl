@@ -108,6 +108,13 @@ Matrix<matrixType>::Matrix(std::size_t rows, std::size_t columns) : mainRows(row
     std::ranges::fill(*this, 0);
 }
 
+template <typename matrixType>
+Matrix<matrixType>::Matrix(const Matrix<matrixType> &matrix) : mainRows(matrix.mainRows), mainColumns(matrix.mainColumns)
+{
+    mainMatrix = new matrixType[mainRows * mainColumns];
+    std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), mainMatrix);
+}
+
 // MATRIX CLASS DECONSTRUCTORS
 template <typename matrixtype>
 Matrix<matrixtype>::~Matrix()
@@ -181,6 +188,29 @@ auto Matrix<matrixType>::operator()(std::size_t row, std::size_t column) const -
     return mainMatrix[(row * mainColumns) + column];
 }
 
+template <typename matrixType>
+auto Matrix<matrixType>::getRows() -> std::size_t
+{
+    return mainRows;
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::getColumns() -> std::size_t
+{
+    return mainColumns;
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::getRows() const -> const std::size_t
+{
+    return mainRows;
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::getColumns() const -> const std::size_t
+{
+    return mainColumns;
+}
 // ASSIGNMENT
 template <typename matrixType>
 auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &
@@ -192,4 +222,43 @@ auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<m
         std::copy(matrix.begin, matrix.end, mainMatrix);
     }
     return *this;
+}
+
+// MATRIX OPERATIONS
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator+(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() + rhsMatrixType())>
+{
+
+    if (!((lhsMatrix.getRows() == rhsMatrix.getRows()) || (lhsMatrix.getColumns() == rhsMatrix.getColumns())))
+    {
+        throw std::out_of_range("size of matrices doesnt Match");
+    }
+
+    Matrix<decltype(lhsMatrixType() + rhsMatrixType())> resultMatrix(lhsMatrix.getRows(), lhsMatrix.getColumns());
+
+    for (auto &&[resultMatrixElement, lhsMatrixElement, rhsMatrixElement] : std::ranges::views::zip(resultMatrix, lhsMatrix, rhsMatrix))
+    {
+        resultMatrixElement = lhsMatrixElement + rhsMatrixElement;
+    }
+
+    return resultMatrix;
+}
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator-(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> Matrix<decltype(lhsMatrixType() - rhsMatrixType())>
+{
+
+    if (!((lhsMatrix.getRows() == rhsMatrix.getRows()) || (lhsMatrix.getColumns() == rhsMatrix.getColumns())))
+    {
+        throw std::out_of_range("size of matrices doesnt Match");
+    }
+
+    Matrix<decltype(lhsMatrixType() - rhsMatrixType())> resultMatrix(lhsMatrix.getRows(), lhsMatrix.getColumns());
+
+    for (auto &&[resultMatrixElement, lhsMatrixElement, rhsMatrixElement] : std::ranges::views::zip(resultMatrix, lhsMatrix, rhsMatrix))
+    {
+        resultMatrixElement = lhsMatrixElement - rhsMatrixElement;
+    }
+
+    return resultMatrix;
 }
