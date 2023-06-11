@@ -174,6 +174,7 @@ auto Matrix<matrixType>::end() const -> const Iterator
 {
     return Matrix<matrixType>::Iterator(mainMatrix + (mainRows * mainColumns));
 }
+
 // ACCESSORS
 template <typename matrixType>
 auto Matrix<matrixType>::operator[](std::size_t row) -> Row
@@ -243,15 +244,15 @@ auto Matrix<matrixType>::getColumns() const -> const std::size_t
 template <typename matrixType>
 auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &
 {
-    if (this != matrix)
+    if (this != &matrix)
     {
         matrixType *tempMatrix = new matrixType[matrix.mainRows * matrix.mainColumns];
-        std::copy(matrix.begin, matrix.end, tempMatrix);
+        std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), tempMatrix);
 
         delete[] mainMatrix;
         mainRows = matrix.mainRows;
         mainColumns = matrix.mainColumns;
-        std::copy(matrix.begin, matrix.end, mainMatrix);
+        std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), mainMatrix);
     }
     return *this;
 }
@@ -338,4 +339,17 @@ auto operator*(const constIntergralType &constIntegral, const Matrix<matrixType>
 {
 
     return otherMatrix * constIntegral;
+}
+
+template <typename matrixType, typename constIntergralType>
+auto operator/(const Matrix<matrixType> &otherMatrix, const constIntergralType &constIntegral) -> Matrix<double>
+{
+    Matrix<double> resultMatrix(otherMatrix.getRows(), otherMatrix.getColumns());
+
+    for (const auto &[otherMatrixElement, resultMatrixElement] : std::ranges::views::zip(otherMatrix, resultMatrix))
+    {
+        resultMatrixElement = static_cast<double>(otherMatrixElement) / constIntegral;
+    }
+
+    return resultMatrix;
 }

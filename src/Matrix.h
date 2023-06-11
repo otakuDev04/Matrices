@@ -1,13 +1,14 @@
 #pragma once
 
 #include <iosfwd>
-#include <memory>
 #include <iterator>
 #include <cstddef>
 #include <concepts>
 #include <ranges>
 #include <stdexcept>
 #include <initializer_list>
+#include <algorithm>
+#include <typeinfo>
 
 template <typename matrixType>
 concept Numeric = std::is_arithmetic_v<matrixType>;
@@ -142,5 +143,8 @@ auto operator*(const Matrix<matrixType> &matrix, const constIntergralType &const
 
 template <typename matrixType, typename constIntergralType>
 auto operator*(const constIntergralType &constIntegral, const Matrix<matrixType> &matrix) -> Matrix<decltype(matrixType() * constIntergralType())>;
+
+template <typename matrixType, typename constIntergralType>
+auto operator/(const Matrix<matrixType> &matrix, const constIntergralType &constIntegral) -> Matrix<double>;
 
 #include "Matrix.inl"
