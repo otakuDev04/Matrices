@@ -246,13 +246,14 @@ auto Matrix<matrixType>::operator=(const Matrix<matrixType> &matrix) -> Matrix<m
 {
     if (this != &matrix)
     {
-        matrixType *tempMatrix = new matrixType[matrix.mainRows * matrix.mainColumns];
-        std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), tempMatrix);
-
         delete[] mainMatrix;
         mainRows = matrix.mainRows;
         mainColumns = matrix.mainColumns;
-        std::copy(matrix.mainMatrix, matrix.mainMatrix + (mainRows * mainColumns), mainMatrix);
+        mainMatrix = new matrixType[mainRows * mainColumns];
+        for (const auto &&[mainMatrixElement, otherMatrixElement] : std::ranges::views::zip(*this, matrix))
+        {
+            mainMatrixElement = otherMatrixElement;
+        }
     }
     return *this;
 }
@@ -313,7 +314,7 @@ auto operator*(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixTyp
         {
             for (std::size_t lhsColumn = 0; lhsColumn < lhsMatrix.getColumns(); lhsColumn++)
             {
-                resultMatrix(lhsRow, rhsColumn) += lhsMatrix(lhsRow, lhsColumn) * rhsMatrix(lhsRow, rhsColumn);
+                resultMatrix(lhsRow, rhsColumn) += lhsMatrix(lhsRow, lhsColumn) * rhsMatrix(lhsColumn, rhsColumn);
             }
         }
     }
@@ -352,4 +353,61 @@ auto operator/(const Matrix<matrixType> &otherMatrix, const constIntergralType &
     }
 
     return resultMatrix;
+}
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator==(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> bool
+{
+    if (!((lhsMatrix.getRows() == rhsMatrix.getRows()) || (lhsMatrix.getColumns() == rhsMatrix.getColumns())))
+    {
+        return false;
+    }
+
+    for (auto &&[lhsMatrixElement, rhsMatrixElement] : std::ranges::views::zip(lhsMatrix, rhsMatrix))
+    {
+        if (lhsMatrixElement != rhsMatrixElement)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator!=(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> bool
+{
+    return !(lhsMatrix == rhsMatrix);
+}
+
+// MATRIX CLASS OPERATIUNS
+template <typename matrixType>
+auto Matrix<matrixType>::transpose() -> Matrix<matrixType>
+{
+    Matrix<matrixType> resultMatrix(mainColumns, mainRows);
+    for (std::size_t row = 0; row < mainColumns; row++)
+    {
+        for (std::size_t column = 0; column < mainRows; column++)
+        {
+            resultMatrix(row, column) = operator()(column, row);
+        }
+    }
+    return resultMatrix;
+}
+
+template <typename matrixType>
+auto Matrix<matrixType>::power(std::size_t exponent) -> Matrix<matrixType>
+{
+    if (exponent < 0)
+    {
+        throw std::invalid_argument("Exponent must be a non-negative integer.");
+    }
+
+    Matrix<matrixType> result = *this;
+    exponent--;
+    while (exponent--)
+    {
+        result = result * (*this);
+    }
+    return result;
 }

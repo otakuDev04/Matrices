@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <initializer_list>
 #include <algorithm>
-#include <typeinfo>
 
 template <typename matrixType>
 concept Numeric = std::is_arithmetic_v<matrixType>;
@@ -123,6 +122,25 @@ public:
     // ASSIGNMENT
     auto operator=(const Matrix<matrixType> &matrix) -> Matrix<matrixType> &;
 
+    // MATRIX CLASS OPERATIONS
+    auto transpose() -> Matrix<matrixType>;
+    auto power(std::size_t exponent) -> Matrix<matrixType>;
+
+    // OUTPUT MATRIX
+    friend auto operator<<(std::ostream &outputStream, const Matrix<matrixType> &matrix) -> std::ostream &
+    {
+        for (const auto &row : matrix | std::ranges::views::chunk(matrix.mainColumns))
+        {
+            for (const auto &column : row)
+            {
+                outputStream << column << " ";
+            }
+            outputStream << std::endl;
+        }
+
+        return outputStream;
+    }
+
 private:
     std::size_t mainRows, mainColumns;
     matrixType *mainMatrix;
@@ -146,5 +164,11 @@ auto operator*(const constIntergralType &constIntegral, const Matrix<matrixType>
 
 template <typename matrixType, typename constIntergralType>
 auto operator/(const Matrix<matrixType> &matrix, const constIntergralType &constIntegral) -> Matrix<double>;
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator==(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> bool;
+
+template <typename lhsMatrixType, typename rhsMatrixType>
+auto operator!=(const Matrix<lhsMatrixType> &lhsMatrix, const Matrix<rhsMatrixType> &rhsMatrix) -> bool;
 
 #include "Matrix.inl"
