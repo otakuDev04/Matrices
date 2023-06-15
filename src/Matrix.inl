@@ -403,6 +403,11 @@ auto Matrix<matrixType>::power(std::size_t exponent) -> Matrix<matrixType>
         throw std::invalid_argument("Exponent must be a non-negative integer.");
     }
 
+    if (mainColumns != mainRows)
+    {
+        throw std::runtime_error("Cant perform this action on rectangular matrices");
+    }
+
     Matrix<matrixType> result = *this;
     exponent--;
     while (exponent--)

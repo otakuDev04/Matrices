@@ -125,6 +125,7 @@ public:
     // MATRIX CLASS OPERATIONS
     auto transpose() -> Matrix<matrixType>;
     auto power(std::size_t exponent) -> Matrix<matrixType>;
+    auto gaussElimination() -> Matrix<matrixType>;
 
     // OUTPUT MATRIX
     friend auto operator<<(std::ostream &outputStream, const Matrix<matrixType> &matrix) -> std::ostream &
@@ -139,6 +140,19 @@ public:
         }
 
         return outputStream;
+    }
+
+    friend auto operator>>(std::istream &inputStream, Matrix<matrixType> &matrix) -> std::istream &
+    {
+        for (auto &&row : matrix | std::ranges::views::chunk(matrix.mainColumns))
+        {
+            for (auto &&column : row)
+            {
+                inputStream >> column;
+            }
+        }
+
+        return inputStream;
     }
 
 private:
